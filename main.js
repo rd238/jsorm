@@ -15,12 +15,10 @@ class tree_periods extends Model {}
 class test extends Model {}
 
 
-let g = new test({});
-let per = new period({});
+let g = new gamer();
+let per = new period();
 
-let res = g.upgrade_filter();
+let res = g.select(["id", "name"]).where("id", "<", 10).or_where("id", "=", 15).end_request();
 
-for (let a = 0; a < res.length; a++) {
-    console.log(res[a]);
-}
+console.log(res)
 

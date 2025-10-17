@@ -1,1 +1,1 @@
-SELECT * FROM link_komand_to_couple WHERE id = '2';
+SELECT id, name FROM gamer WHERE id < 10  OR id = 15 ;

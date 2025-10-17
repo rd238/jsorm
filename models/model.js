@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
-
+const { SettingsDataBase } = require('../settings/settings_database');
 
 function field({
         name = "name",
@@ -26,22 +26,19 @@ function field({
 
 class Model {
     #name_table = this.constructor.name.toLowerCase();
-    #password = "";
-    #user = "";
-    #database = "";
 
     #path = path.join(__dirname, 'request.sql');
     #comand = "";
 
-    #set_data_base(name){
-        this.#database = name;
-    }
+    #request = "";
+    #index_request = 0;
 
-    #set_user(user, password){
-        this.#user = user;
-        this.#password = password;
+    constructor(...args) {
+        let settings = new SettingsDataBase({});
 
-        process.env.PGPASSWORD = this.#password;
+        this.#comand = `psql -U ${settings.user} -d ${settings.database} -f "${this.#path}"`;
+
+        this.#create_model(...args);
     }
 
     #create_model(...args) {
@@ -52,29 +49,8 @@ class Model {
         return execSync(this.#comand, {encoding: 'utf8'});
     }
 
-    constructor({
-                    user = "postgres",
-                    password = "2352",
-                    database = "data_bases",
-                },
-                ...args) {
-
-        this.#set_data_base(database);
-        this.#set_user(user, password);
-
-        this.#comand = `psql -U ${this.#user} -d ${this.#database} -f "${this.#path}"`;
-
-        this.#create_model(...args);
-    }
-
     #where_to_get(obj) {
         let keys = Object.keys(obj);
-
-        for (let key of keys) {
-            if (obj[key] instanceof Object) {
-                return `id = (SELECT id_${this.#name_table} FROM ${key} WHERE ${this.#where_to_get(obj[key])})`;
-            }
-        }
 
         return keys.map((val) => {
             return `${val} = ` + (
@@ -174,7 +150,7 @@ class Model {
         if (res.length === 0) {
             return [];
         }
-        let objects = [];
+        let objects = {name_table: this.#name_table, result: []};
         let columns = res[0].split(" | ").map(val => val.trim());
         for (let i = 1; i < res.length; i++) {
             let obj = {};
@@ -182,7 +158,7 @@ class Model {
             for (let j = 0; j < columns.length; j++) {
                 obj[columns[j]] = vals[j];
             }
-            objects.push(obj);
+            objects.result.push(obj);
         }
 
         return objects
@@ -214,6 +190,38 @@ class Model {
         }
 
         return res;
+    }
+
+    select(fields, name_table= "", as = "") {
+        this.#request = `SELECT ${fields ? fields.join(', ') : "*"} FROM ${name_table ? name_table : this.#name_table} `;
+
+        return this;
+    }
+
+    where(ysl1, operation,ysl2) {
+        this.#request += `WHERE ${ysl1} ${operation} ${ysl2} `;
+
+        return this;
+    }
+
+    and_where(ysl1, operation, ysl2) {
+        this.#request += ` AND ${ysl1} ${operation} ${ysl2} `;
+
+        return this;
+    }
+
+    or_where(ysl1, operation, ysl2) {
+        this.#request += ` OR ${ysl1} ${operation} ${ysl2} `;
+
+        return this;
+    }
+
+    end_request() {
+        this.#request += ";";
+
+        fs.writeFileSync(this.#path, this.#request);
+
+        return this.parse_table_to_objects(execSync(this.#comand, {encoding: 'utf8'}));
     }
 }
 
