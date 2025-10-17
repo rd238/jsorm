@@ -37,6 +37,7 @@ class Model {
         let settings = new SettingsDataBase({});
 
         this.#command = settings.command;
+        this.parse_table_to_objects = settings.parse_function;
 
         this.#create_model(...args);
     }
@@ -135,40 +136,6 @@ class Model {
         }
 
         return this.parse_table_to_objects(execSync(this.#command + `"${request}"`, {encoding: 'utf8'}));
-    }
-
-    parse_table_to_objects(table) {
-        if (typeof table !== 'string') {
-            return table;
-        }
-
-        let res = table.split('\r\n');
-
-        res.splice(1, 1);
-        res.splice(-3, 3);
-
-        if (res.length === 0) {
-            return [];
-        }
-
-        let objects = {
-            name_table: this.name_table,
-            result: []
-        };
-        let columns = res[0].split(" | ").map(val => val.trim());
-
-        for (let i = 1; i < res.length; i++) {
-            let obj = {};
-            let vals = res[i].split(" | ").map(val => val.trim());
-
-            for (let j = 0; j < columns.length; j++) {
-                obj[columns[j]] = vals[j];
-            }
-
-            objects.result.push(obj);
-        }
-
-        return objects;
     }
 
     upgrade_get(args) {
