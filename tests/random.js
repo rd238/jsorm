@@ -29,3 +29,8 @@ function generateEnglishName() {
 
     return `${firstName} ${lastName}`;
 }
+
+module.exports = {
+    generateCompanyName,
+    generateEnglishName
+}
