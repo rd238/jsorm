@@ -1,0 +1,1 @@
+SELECT * FROM link_komand_to_couple WHERE id = '2';
