@@ -21,7 +21,7 @@ let per = new period();
 let res = g.select(["id", "name"]).where("id", "<", 10).or_where("id", "=", 15).end_request();
 let res1 = g.filter();
 let res2 = g.get({id: 1});
-let res4test = g.select().where("id", "=", 21).or_where("id", "=", 20).end_request();
+let res4test = g.select(["id"]).where("id", "=", 21).or_where("id", "=", 20).end_request();
 console.log(res4test)
 
 

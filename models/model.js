@@ -34,7 +34,7 @@ class Model {
     constructor(...args) {
         let settings = new SettingsDataBase({});
 
-        this.#command = `psql -U ${settings.user} -d ${settings.database} -c `;
+        this.#command = settings.command;
 
         this.#create_model(...args);
     }
