@@ -151,7 +151,10 @@ class Model {
             return [];
         }
 
-        let objects = {name_table: this.#name_table, result: []};
+        let objects = {
+            name_table: this.#name_table,
+            result: []
+        };
         let columns = res[0].split(" | ").map(val => val.trim());
 
         for (let i = 1; i < res.length; i++) {

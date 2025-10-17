@@ -28,9 +28,9 @@ class SettingsDataBase {
             database= "data_bases",
             user = "postgres",
             password = "2352",
-
         }
         ) {
+
         this.#set_data_base(database);
         this.#set_user(user, password);
         this.#set_command(subd);
@@ -38,5 +38,5 @@ class SettingsDataBase {
 }
 
 module.exports = {
-    SettingsDataBase
+    SettingsDataBase,
 };
