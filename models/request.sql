@@ -1,1 +1,0 @@
-SELECT id, name FROM komand WHERE id < 10  OR id = 15 ;

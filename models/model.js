@@ -27,25 +27,22 @@ function field({
 class Model {
     #name_table = this.constructor.name.toLowerCase();
 
-    #path = path.join(__dirname, 'request.sql');
-    #comand = "";
+    #command = "";
 
     #compound_request = "";
 
     constructor(...args) {
         let settings = new SettingsDataBase({});
 
-        this.#comand = `psql -U ${settings.user} -d ${settings.database} -f "${this.#path}"`;
+        this.#command = `psql -U ${settings.user} -d ${settings.database} -c `;
 
         this.#create_model(...args);
     }
 
     #create_model(...args) {
-        let request = `CREATE TABLE IF NOT EXISTS ${this.#name_table} (\n${args.join(',')}\n);`;
+        let request = `CREATE TABLE IF NOT EXISTS ${this.#name_table} (${args.join(',')});`;
 
-        fs.writeFileSync(this.#path, request);
-
-        return execSync(this.#comand, {encoding: 'utf8'});
+        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
     }
 
     #where_to_get(obj) {
@@ -59,42 +56,40 @@ class Model {
         }).join(' AND ');
     }
 
-    #get(obj, name_table="") {
-        let where = this.#where_to_get(obj);
+    get(args, name_table="") {
+        let where = this.#where_to_get(args);
 
         let request = `SELECT * FROM ${name_table ? name_table : this.#name_table} WHERE ${where};`;
 
-        fs.writeFileSync(this.#path, request);
-
-        return this.parse_table_to_objects(execSync(this.#comand, {encoding: 'utf8'}));
-    }
-
-    get(args) {
-        return this.#get(args);
+        return this.parse_table_to_objects(execSync(this.#command + `"${request}"`, {encoding: 'utf8'}));
     }
 
     create(obj) {
         let keys = Object.keys(obj);
 
-        let request = `INSERT INTO ${this.#name_table} (${keys.join(',')})
-        VALUES (${keys.map(key => typeof obj[key] == 'string' ?`'${obj[key]}'` : `${obj[key]}`).join(',')});`;
+        let request = `INSERT INTO ${this.#name_table} (${keys.join(',')}) ` +
+            `VALUES (${keys.map(
+            key => 
+                    typeof obj[key] == 'string' 
+                            ?
+                            `'${obj[key]}'` : `${obj[key]}`).join(',')});`;
 
-        fs.writeFileSync(this.#path, request);
-
-        return execSync(this.#comand, {encoding: 'utf8'});
+        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
     }
 
     bulc_create(...objs) {
         let request = "";
         for (let obj of objs) {
             let keys = Object.keys(obj);
-            request += `INSERT INTO ${this.#name_table} (${keys.join(',')})
-            VALUES (${keys.map(key => typeof obj[key] == 'string' ?`'${obj[key]}'` : `${obj[key]}`).join(',')});\n`;
-
-            fs.writeFileSync(this.#path, request);
+            request += `INSERT INTO ${this.#name_table} (${keys.join(',')}) ` +
+                `VALUES (${keys.map(
+                    key => 
+                        typeof obj[key] == 'string' 
+                            ?
+                            `'${obj[key]}'` : `${obj[key]}`).join(',')});`;
         }
 
-        return execSync(this.#comand, {encoding: 'utf8'});
+        return execSync(this.#command  + `"${request}"`, {encoding: 'utf8'});
     }
 
     get_or_create(args) {
@@ -114,12 +109,10 @@ class Model {
             request += ` WHERE ${where};`;
         }
 
-        fs.writeFileSync(this.#path, request);
-
-        return execSync(this.#comand, {encoding: 'utf8'});
+        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
     }
 
-    #filter(obj, name_table="") {
+    filter(obj, name_table="") {
         let request = `SELECT * FROM ${name_table ? name_table : this.#name_table}`;
         if (obj) {
             let where = this.#where_to_get(obj);
@@ -127,13 +120,7 @@ class Model {
             request += ` WHERE ${where};`;
         }
 
-        fs.writeFileSync(this.#path, request);
-
-        return this.parse_table_to_objects(execSync(this.#comand, {encoding: 'utf8'}));
-    }
-
-    filter(args) {
-        return this.#filter(args);
+        return this.parse_table_to_objects(execSync(this.#command + `"${request}"`, {encoding: 'utf8'}));
     }
 
     parse_table_to_objects(str) {
@@ -164,28 +151,28 @@ class Model {
     }
 
     upgrade_get(args) {
-        let res = this.#get(args);
+        let res = this.get(args);
 
         for (let i = 0; i < res.length; i++) {
             Object.keys(res[i]).map(
                 value =>
                     value.includes("id_")
                         ?
-                        res[i][value] = this.#get({id: res[i][value]}, value.substring(3)) : value);
+                        res[i][value] = this.get({id: res[i][value]}, value.substring(3)) : value);
         }
 
         return res;
     }
 
     upgrade_filter(args) {
-        let res = this.#filter(args);
+        let res = this.filter(args);
 
         for (let i = 0; i < res.length; i++) {
             Object.keys(res[i]).map(
                 value =>
                     value.includes("id_")
                         ?
-                        res[i][value] = this.#filter({id: res[i][value]}, value.substring(3)) : value);
+                        res[i][value] = this.filter({id: res[i][value]}, value.substring(3)) : value);
         }
 
         return res;
@@ -218,9 +205,7 @@ class Model {
     end_request() {
         this.#compound_request += ";";
 
-        fs.writeFileSync(this.#path, this.#compound_request);
-
-        let result = this.parse_table_to_objects(execSync(this.#comand, {encoding: 'utf8'}));
+        let result = this.parse_table_to_objects(execSync(this.#command + `"${this.#compound_request}"`, {encoding: 'utf8'}));
 
         this.#compound_request = "";
 
