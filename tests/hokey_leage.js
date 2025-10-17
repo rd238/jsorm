@@ -1,4 +1,4 @@
-const {Model, field} = require("./models/model");
+const {Model, field} = require("../models/model");
 
 class komand extends Model {}
 class gamer extends Model {}
