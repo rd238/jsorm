@@ -21,7 +21,7 @@ let komand_ = new komand(
 let gamer_ = new gamer(
     field({name: "id", type: "bigint", primary_key: true}),
     field({name: "name", type: "varchar(100)", _null: false}),
-    field({name: "id_komand", foreign_key: komand_.name_table}),
+    field({name: "id_komand", type: "bigint", foreign_key: komand_.name_table}),
 );
 
 

@@ -5,8 +5,8 @@ const {SettingsDataBase} = require('../settings/settings_database');
 
 function field(
     {
-        name = "name",
-        type = "str",
+        name = "",
+        type = "",
         _null = true,
         unique = false,
         primary_key = false,
