@@ -30,8 +30,7 @@ class Model {
     #path = path.join(__dirname, 'request.sql');
     #comand = "";
 
-    #request = "";
-    #index_request = 0;
+    #compound_request = "";
 
     constructor(...args) {
         let settings = new SettingsDataBase({});
@@ -193,35 +192,39 @@ class Model {
     }
 
     select(fields, name_table= "", as = "") {
-        this.#request = `SELECT ${fields ? fields.join(', ') : "*"} FROM ${name_table ? name_table : this.#name_table} `;
+        this.#compound_request = `SELECT ${fields ? fields.join(', ') : "*"} FROM ${name_table ? name_table : this.#name_table} `;
 
         return this;
     }
 
     where(ysl1, operation,ysl2) {
-        this.#request += `WHERE ${ysl1} ${operation} ${ysl2} `;
+        this.#compound_request += `WHERE ${ysl1} ${operation} ${ysl2} `;
 
         return this;
     }
 
     and_where(ysl1, operation, ysl2) {
-        this.#request += ` AND ${ysl1} ${operation} ${ysl2} `;
+        this.#compound_request += ` AND ${ysl1} ${operation} ${ysl2} `;
 
         return this;
     }
 
     or_where(ysl1, operation, ysl2) {
-        this.#request += ` OR ${ysl1} ${operation} ${ysl2} `;
+        this.#compound_request += ` OR ${ysl1} ${operation} ${ysl2} `;
 
         return this;
     }
 
     end_request() {
-        this.#request += ";";
+        this.#compound_request += ";";
 
-        fs.writeFileSync(this.#path, this.#request);
+        fs.writeFileSync(this.#path, this.#compound_request);
 
-        return this.parse_table_to_objects(execSync(this.#comand, {encoding: 'utf8'}));
+        let result = this.parse_table_to_objects(execSync(this.#comand, {encoding: 'utf8'}));
+
+        this.#compound_request = "";
+
+        return result;
     }
 }
 

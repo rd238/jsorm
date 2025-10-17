@@ -1,1 +1,1 @@
-SELECT id, name FROM gamer WHERE id < 10  OR id = 15 ;
+SELECT id, name FROM komand WHERE id < 10  OR id = 15 ;
