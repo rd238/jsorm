@@ -10,7 +10,8 @@ const {
     gamer_stats_for_period_,
     game_,
 } = require('./tests/hokey_leage');
-fill();
+// fill();
 
-// console.log(komand_.filter())
+console.log(komand_.update({ id: '1', name: 'ProGroup Company', popularity: '65' }, {name: "new", popularity: 0}))
+console.log(komand_.get({id: 1}))
 

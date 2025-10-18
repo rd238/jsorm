@@ -41,46 +41,6 @@ class Model {
         this.#create_model(...args);
     }
 
-    #send_foreign_to_end(args) {
-        let arr = [];
-
-        args.flat().map(
-            value =>
-                value.includes("FOREIGN") ? value : arr.push(value)
-        );
-
-        args.flat().map(
-            value =>
-                value.includes("FOREIGN") ? arr.push(value) : value
-        );
-
-        return arr;
-    }
-
-    #create_model(...args) {
-        args = this.#send_foreign_to_end(args);
-
-        let request = `CREATE TABLE IF NOT EXISTS ${this.name_table} ` +
-            `(${args.join(',')});`;
-
-        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
-    }
-
-    #where_to_get(args) {
-        let keys = Object.keys(args);
-
-        return keys.map((val) => {
-                return `${val} = ` + (
-                    typeof args[val] === 'string'
-                        ?
-                        `'${args[val]}'`
-                        :
-                        `${args[val]}`
-                )
-            }
-        ).join(' AND ');
-    }
-
     get(args, name_table = "") {
         let where = this.#where_to_get(args);
 
@@ -103,6 +63,28 @@ class Model {
                         ?
                         `'${args[key]}'` : `${args[key]}`
             ).join(',')});`;
+
+        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
+    }
+
+    update(ysl, args) {
+        let args_keys = Object.keys(args);
+        let ysl_keys = Object.keys(ysl);
+
+        let request = `UPDATE ${this.name_table} ` +
+            `SET ${args_keys.map(
+                key => 
+                    `${key} = ${
+                    typeof args[key] === 'string' 
+                        ? 
+                        `'${args[key]}'` : args[key]}`
+            ).join(",")} ` +
+            `WHERE ${ysl_keys.map(
+                key => 
+                    `${key} = ${
+                    typeof ysl[key] === 'string' 
+                        ? `'${ysl[key]}'` : ysl[key]}`
+            ).join(" AND ")}`
 
         return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
     }
@@ -227,6 +209,46 @@ class Model {
         this.#compound_request = "";
 
         return result;
+    }
+
+    #send_foreign_to_end(args) {
+        let arr = [];
+
+        args.flat().map(
+            value =>
+                value.includes("FOREIGN") ? value : arr.push(value)
+        );
+
+        args.flat().map(
+            value =>
+                value.includes("FOREIGN") ? arr.push(value) : value
+        );
+
+        return arr;
+    }
+
+    #create_model(...args) {
+        args = this.#send_foreign_to_end(args);
+
+        let request = `CREATE TABLE IF NOT EXISTS ${this.name_table} ` +
+            `(${args.join(',')});`;
+
+        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
+    }
+
+    #where_to_get(args) {
+        let keys = Object.keys(args);
+
+        return keys.map((val) => {
+                return `${val} = ` + (
+                    typeof args[val] === 'string'
+                        ?
+                        `'${args[val]}'`
+                        :
+                        `${args[val]}`
+                )
+            }
+        ).join(' AND ');
     }
 }
 
