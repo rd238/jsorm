@@ -5,8 +5,8 @@ const {SettingsDataBase} = require('../settings/settings_database');
 
 function field(
     {
-        name = "",
-        type = "",
+        name,
+        type,
         _null = true,
         unique = false,
         primary_key = false,
@@ -19,8 +19,7 @@ function field(
     let _primary_key = primary_key ? "PRIMARY KEY" : "";
 
     if (foreign_key) {
-        return `${name} ${type} ${is_null} ${_unique} ${_primary_key}, ` +
-            `FOREIGN KEY (${name}) REFERENCES ${foreign_key}(id)`;
+        return [`${name} ${type} ${is_null} ${_unique} ${_primary_key} `, `FOREIGN KEY (${name}) REFERENCES ${foreign_key}(id)`];
     }
     return `${name} ${type} ${is_null} ${_unique} ${_primary_key}`;
 }
@@ -42,7 +41,25 @@ class Model {
         this.#create_model(...args);
     }
 
+    #send_foreign_to_end(args) {
+        let arr = [];
+
+        args.flat().map(
+            value =>
+                value.includes("FOREIGN") ? value : arr.push(value)
+        );
+
+        args.flat().map(
+            value =>
+                value.includes("FOREIGN") ? arr.push(value) : value
+        );
+
+        return arr;
+    }
+
     #create_model(...args) {
+        args = this.#send_foreign_to_end(args);
+
         let request = `CREATE TABLE IF NOT EXISTS ${this.name_table} ` +
             `(${args.join(',')});`;
 

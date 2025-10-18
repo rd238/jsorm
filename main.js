@@ -10,7 +10,7 @@ const {
     gamer_stats_for_period_,
     game_,
 } = require('./tests/hokey_leage');
-// fill();
+fill();
 
-console.log(gamer_.filter().result.length)
+// console.log(komand_.filter())
 

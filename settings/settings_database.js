@@ -8,7 +8,7 @@ class SettingsDataBase {
 
     constructor(
         {
-            subd= "mysql" ,
+            subd= "postgres" ,
             database= "data_bases",
             user = "postgres",
             password = "2352",
@@ -44,6 +44,8 @@ class SettingsDataBase {
             this.command = `psql -U ${this.user} -d ${this.database} -c `;
         } else if (subd === "mysql"){
             this.command = `mysql -u ${this.user} -D ${this.database} -e `;
+        } else if (subd === "sqlite"){
+            this.command = `sqlite3 ${this.database}.db -header `;
         }
     }
 
@@ -52,6 +54,8 @@ class SettingsDataBase {
             this.parse_function = this.#parse_postgres;
         } else if (subd === "mysql"){
             this.parse_function = this.#parse_mysql;
+        } else if (subd === "sqlite"){
+            this.parse_function = this.#parse_sqlite;
         }
     }
 
@@ -112,6 +116,31 @@ class SettingsDataBase {
         }
 
         objects.result.pop();
+        return objects;
+    }
+
+    #parse_sqlite(table) {
+        if (typeof table !== 'string') {
+            return table;
+        }
+        let res = table.split('\r\n').map(val => val.split("|"));
+
+        let objects = {
+            name_table: this.name_table,
+            result: []
+        };
+        let columns = res[0];
+        for (let i = 1; i < res.length; i++) {
+            let obj = {};
+            for (let j = 0; j < columns.length; j++) {
+                obj[columns[j]] = res[i][j];
+            }
+
+            objects.result.push(obj);
+        }
+
+        objects.result.pop();
+
         return objects;
     }
 }
