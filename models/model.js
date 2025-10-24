@@ -41,18 +41,6 @@ class Model {
         this.#create_model(...args);
     }
 
-    get(args, name_table = "") {
-        let where = this.#where_to_get(args);
-
-        let request = `SELECT * ` +
-            `FROM ${name_table ? name_table : this.name_table} ` +
-            `WHERE ${where};`;
-
-        return this.parse_table_to_objects(
-            execSync(this.#command + `"${request}"`, {encoding: 'utf8'})
-        );
-    }
-
     create(args) {
         let keys = Object.keys(args);
 
@@ -63,28 +51,6 @@ class Model {
                         ?
                         `'${args[key]}'` : `${args[key]}`
             ).join(',')});`;
-
-        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
-    }
-
-    update(ysl, args) {
-        let args_keys = Object.keys(args);
-        let ysl_keys = Object.keys(ysl);
-
-        let request = `UPDATE ${this.name_table} ` +
-            `SET ${args_keys.map(
-                key => 
-                    `${key} = ${
-                    typeof args[key] === 'string' 
-                        ? 
-                        `'${args[key]}'` : args[key]}`
-            ).join(",")} ` +
-            `WHERE ${ysl_keys.map(
-                key => 
-                    `${key} = ${
-                    typeof ysl[key] === 'string' 
-                        ? `'${ysl[key]}'` : ysl[key]}`
-            ).join(" AND ")}`
 
         return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
     }
@@ -114,15 +80,16 @@ class Model {
         }
     }
 
-    delete(args) {
-        let request = `DELETE ` +
-            `FROM ${this.name_table}`;
-        if (args) {
-            let where = this.#where_to_get(args);
-            request += ` WHERE ${where};`;
-        }
+    get(args, name_table = "") {
+        let where = this.#where_to_get(args);
 
-        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
+        let request = `SELECT * ` +
+            `FROM ${name_table ? name_table : this.name_table} ` +
+            `WHERE ${where};`;
+
+        return this.parse_table_to_objects(
+            execSync(this.#command + `"${request}"`, {encoding: 'utf8'})
+        );
     }
 
     filter(args, name_table = "") {
@@ -135,6 +102,39 @@ class Model {
         }
 
         return this.parse_table_to_objects(execSync(this.#command + `"${request}"`, {encoding: 'utf8'}));
+    }
+
+    update(ysl, args) {
+        let args_keys = Object.keys(args);
+        let ysl_keys = Object.keys(ysl);
+
+        let request = `UPDATE ${this.name_table} ` +
+            `SET ${args_keys.map(
+                key => 
+                    `${key} = ${
+                    typeof args[key] === 'string' 
+                        ? 
+                        `'${args[key]}'` : args[key]}`
+            ).join(",")} ` +
+            `WHERE ${ysl_keys.map(
+                key => 
+                    `${key} = ${
+                    typeof ysl[key] === 'string' 
+                        ? `'${ysl[key]}'` : ysl[key]}`
+            ).join(" AND ")}`
+
+        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
+    }
+
+    delete(args) {
+        let request = `DELETE ` +
+            `FROM ${this.name_table}`;
+        if (args) {
+            let where = this.#where_to_get(args);
+            request += ` WHERE ${where};`;
+        }
+
+        return execSync(this.#command + `"${request}"`, {encoding: 'utf8'});
     }
 
     upgrade_get(args) {
