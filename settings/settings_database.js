@@ -9,7 +9,7 @@ class SettingsDataBase {
     constructor(
         {
             subd= "postgres" ,
-            database= "data_bases",
+            database= "demo",
             user = "postgres",
             password = "2352",
         }

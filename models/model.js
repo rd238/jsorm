@@ -178,6 +178,12 @@ class Model {
         return this;
     }
 
+    _join(table, ysl){
+        this.#compound_request += ` JOIN ${table} ON ${ysl} `;
+
+        return this;
+    }
+
     where(ysl1, operation, ysl2) {
         this.#compound_request += `WHERE ${ysl1} ${operation} ${ysl2} `;
 
@@ -192,6 +198,24 @@ class Model {
 
     or_where(ysl1, operation, ysl2) {
         this.#compound_request += ` OR ${ysl1} ${operation} ${ysl2} `;
+
+        return this;
+    }
+
+    group_by(fields) {
+        this.#compound_request += ` GROUP BY ` + fields.join(', ');
+
+        return this;
+    }
+
+    having(ysl) {
+        this.#compound_request += ` HAVING ${ysl} `;
+
+        return this;
+    }
+
+    order_by(fields) {
+        this.#compound_request += ` ORDER BY ` + fields.join(', ');
 
         return this;
     }
